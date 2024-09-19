@@ -39,7 +39,8 @@ After adding the executable permissions to the provided bash file (_bash_trainin
 ```
 
 ## Experimental results and recording
-After training, the model weights will be saved in "_./results/weights/_"
+After training, the model weights will be saved in "_./results/weights/_".
+
 After testing, the tested evaluation metrics will be saved in "_./results/logs/_". 
 
 
