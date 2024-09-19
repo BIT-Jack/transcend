@@ -38,11 +38,8 @@ class UQnet(MammothBackbone):   # MammothBackbone
     def forward(self, x):
         trajectory, maps, masker, lanefeatures, adj, af, ar, c_mask = x
         if self.inference:
-            #print("here")
             hlane, hmid, hinteraction = self.encoder(maps, trajectory, lanefeatures, adj, af, c_mask)
         else:
-            #print("HERE")
-            
             hlane, hmid, hinteraction, hmae = self.encoder(maps, trajectory, lanefeatures, adj, af, c_mask)
         grid = self.mesh.reshape(-1, 2)
 
@@ -52,11 +49,9 @@ class UQnet(MammothBackbone):   # MammothBackbone
         if not self.inference:
             heatmap_reg = self.reg_decoder(hmae, grid, ar, c_mask, masker)
             heatmap_reg = heatmap_reg.reshape(maps.size(0), self.mesh.size(0), self.mesh.size(1))
-            # print("return log_lanescore, heatmap, and heatmap_reg")
             return log_lanescore, heatmap, heatmap_reg
         else:
             if not self.test:
-                # print("return log_lanescore, heatmap")
                 return log_lanescore, heatmap
             else:
                 if self.prob_mode=='nll':
@@ -66,7 +61,6 @@ class UQnet(MammothBackbone):   # MammothBackbone
                     out = torch.clamp(out, min=1e-7)
                     if self.resolution==0.5:
                         out = nn.AvgPool2d(3,stride=1,padding=1)(out.unsqueeze(0))
-                # print("return torch.exp(log_lanescore) and out.squeeze")
                 return torch.exp(log_lanescore), out.squeeze()
         
 

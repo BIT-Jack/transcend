@@ -1,11 +1,14 @@
 #!/bin/bash
 
+
 #training and test CL...
 echo " Running Continual Training EXP"
 echo $(pwd)
-python train_CL.py  --model derppgssrev --buffer_size 500 --debug_mode 0 --replayed_rc 1 & P1=$!
+
+
+python train_CL.py  --model b2p --buffer_size 500 --debug_mode 0 --replayed_rc 1 & P1=$!
 wait $P1
-python test_CL.py --model derppgssrev --buffer_size 500 --num_tasks 8 --store_traj True & P2=$!
+python test_CL.py --model b2p --buffer_size 500 --num_tasks 8 --store_traj True & P2=$!
 wait $P2
 echo "Ours Finished"
 
@@ -39,8 +42,6 @@ wait $P11
 python test_CL.py --model vanilla --buffer_size 500 --num_tasks 8 --store_traj True & P12=$!
 wait $P12
 echo "Vanilla Finished"
-
-
 
 
 echo "-----------All scripts are executed.The index is No.1"

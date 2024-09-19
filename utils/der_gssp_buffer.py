@@ -48,6 +48,8 @@ class Buffer:
         self.reset_fathom()
 
         self.model_name = model_name
+
+        self.memory_data = [[0]*self.buffer_size]
     
     def reset_fathom(self):
         self.fathom = 0
@@ -74,7 +76,7 @@ class Buffer:
         
         # let's split this so your gpu does not melt. You're welcome.
         for it in range(int(np.ceil(G.shape[0] / grads_at_a_time))):
-            tmp = F.cosine_similarity(g, G[it*grads_at_a_time: (it+1)*grads_at_a_time], dim=1).max().item() + 1 #Algorithm 2, row 7
+            tmp = F.cosine_similarity(g, G[it*grads_at_a_time: (it+1)*grads_at_a_time], dim=1).max().item() + 1 #Algorithm 2
             c_score = max(c_score, tmp)
         return c_score
 
@@ -113,13 +115,7 @@ class Buffer:
 
     def init_tensors(self, examples: tuple, labels: torch.Tensor,
                      logits: tuple) -> None:
-        """
-        Initializes just the required tensors.
-        :param examples: tuples containing tensor of historical trajectories and map information
-        :param labels: the ground truth of predicted trajecotries
-        :param logits: the predicted heatmap in UQnet
-        :param task_labels: used in GEM method
-        """
+
 
         for attr_str in self.attributes:
             attr = eval(attr_str) 
@@ -155,13 +151,7 @@ class Buffer:
 
 
     def add_data(self, examples, labels=None, logits=None, task_order=None, record_data_list=None):
-        """
-        Adds the data to the memory buffer according to the reservoir strategy.
-        :param examples: tuples containing tensor of historical trajectories and map information
-        :param labels: the ground truth of predicted trajecotries
-        :param logits: the predicted heatmap in UQnet
-        :param task_labels: used in GEM method
-        """
+
         if not hasattr(self, 'examples'):
             self.init_tensors(examples, labels, logits)
         
@@ -188,8 +178,8 @@ class Buffer:
             self.num_seen_examples += 1
             if index >= 0:
                 # record the replayed data for further analysis
-                if record_data_list is not None and task_order is not None:
-                    record_data_list[index]=task_order
+                if task_order is not None:
+                   self.memory_recording(index, task_order)
 
 
                 for ii in range(len(self.examples)):
@@ -204,6 +194,9 @@ class Buffer:
                 self.scores[index] = score
                 if index in self.cache:
                     del self.cache[index]
+            else:
+                if task_order is not None:
+                   self.memory_recording(index, task_order)
 
 
 
@@ -231,7 +224,7 @@ class Buffer:
         # To create the tuple to return
         ret_list = [0 for _ in range(len(self.examples))]
         for id_ex in range(len(self.examples)):
-            ret_list[id_ex] = (torch.stack([transform(ee.cpu()) for ee in self.examples[id_ex][choice]]).to(self.device),) #此时ret_list中所有元素为包含张量的子元组
+            ret_list[id_ex] = (torch.stack([transform(ee.cpu()) for ee in self.examples[id_ex][choice]]).to(self.device),) 
        
         # Replace the sub-tuple as tensors
         ret_tuple_tmp = tuple(ret_list)
@@ -321,3 +314,14 @@ class Buffer:
             if hasattr(self, attr_str):
                 delattr(self, attr_str)
         self.num_seen_examples = 0
+
+    def memory_recording(self, index, task_label):
+        if index != -1:
+            tmp_list_memory_in_this_step = self.memory_data[-1].copy()
+            tmp_list_memory_in_this_step[index] = task_label
+            self.memory_data.append(tmp_list_memory_in_this_step)
+        else:
+            tmp_list_memory_in_this_step = self.memory_data[-1].copy()
+            self.memory_data.append(tmp_list_memory_in_this_step)
+        with open('./logging/replayed_memory/buffer_diverse_'+self.model_name+'_bf_'+str(self.buffer_size)+'.txt', 'a') as f:
+            f.write(f"Step {len(self.memory_data)-1}: {tmp_list_memory_in_this_step}\n")

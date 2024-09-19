@@ -93,8 +93,5 @@ class MammothBackbone(nn.Module):
         for pp in list(self.parameters()):
             if pp.grad is not None:##
                 grads.append(pp.grad.view(-1))
-                # print("appending...ok...")
-            # else:
-                # print("grad is NONE!!!")
-                # continue
+
         return grads

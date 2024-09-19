@@ -30,7 +30,7 @@ def train(model: ContinualModel,
         current = 0
         for i, data in enumerate(train_loader):
             current = current + args.batch_size
-            if args.debug_mode and i >= 10:
+            if args.debug_mode and i >= 100:
                 print("\n >>>>>>>>>>>>debuging>>>>>>>>>>>")
                 break
             traj, splines, masker, lanefeature, adj, A_f, A_r, c_mask, y, ls = data

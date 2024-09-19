@@ -5,7 +5,6 @@ from torch import nn, Tensor
 from traj_predictor.utils import *
 import math
 
-# @GuopengLI, 16:11:15 9th Feb. 2022 (auto)
 
 class LayerNorm(nn.Module):
     def __init__(self, hidden_size, eps=1e-5):

@@ -3,7 +3,6 @@ import torch
 from torch.optim import Adam
 from cl_model.gem import overwrite_grad, store_grad
 from cl_model.continual_model import ContinualModel
-# from utils.agem_buffer import Buffer
 from utils.derpp_buffer import Buffer
 from torch import nn
 
@@ -49,7 +48,7 @@ class AGem(nn.Module):
         self.buffer.add_data(examples= cur_x,labels=cur_y)
 
 
-    def observe(self, inputs, labels):
+    def observe(self, inputs, labels, task_id=None, record_list=None):
 
         self.zero_grad()
         p = self.net.forward(inputs)

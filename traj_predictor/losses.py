@@ -61,6 +61,7 @@ class OverAllLoss(nn.Module):
         self.heatmap_loss = FocalLoss_interaction(para)
         self.l1_loss = nn.L1Loss()
     def forward(self, inputs, targets, lmbd=5):
+
         l0 = self.heatmap_loss(inputs[2], targets[1])
         l1 = self.lanescore_loss(inputs[0], targets[0].to(torch.int64))
         lmain = self.heatmap_loss(inputs[1], targets[1])

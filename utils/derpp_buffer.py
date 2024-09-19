@@ -26,9 +26,7 @@ def reservoir(num_seen_examples: int, buffer_size: int) -> int:
 
 
 class Buffer:
-    """
-    The memory buffer of rehearsal method.
-    """
+
 
     def __init__(self, buffer_size, device, model_name, n_tasks=None, mode='reservoir'):
         assert mode in ('ring', 'reservoir')
@@ -40,6 +38,7 @@ class Buffer:
 
         self.attributes = ['examples', 'labels', 'logits', 'task_labels']
 
+        self.memory_data = [[0]*self.buffer_size]
 
     def to(self, device):
         self.device = device
@@ -53,13 +52,7 @@ class Buffer:
 
     def init_tensors(self, examples: tuple, labels: torch.Tensor,
                      logits: tuple, task_labels: torch.Tensor) -> None:
-        """
-        Initializes just the required tensors.
-        :param examples: tuples containing tensor of historical trajectories and map information
-        :param labels: the ground truth of predicted trajecotries
-        :param logits: the predicted heatmap in UQnet
-        :param task_labels: used in GEM method
-        """
+
 
         for attr_str in self.attributes:
             attr = eval(attr_str) 
@@ -73,14 +66,14 @@ class Buffer:
                             *attr[ii].shape[1:]), dtype=typ, device=self.device))
                     self.examples = tuple(self.examples)
                 
-                if self.model_name == "derppgssrev" or self.model_name == "gem" or self.model_name == "agem":
+                if self.model_name == "b2p" or self.model_name == "gem" or self.model_name == "agem":
                     if attr_str == 'labels':
                         for ii in range(len(attr)):
                             self.labels.append(torch.zeros((self.buffer_size,
                                 *attr[ii].shape[1:]), dtype=typ, device=self.device))
                         self.labels = tuple(self.labels)          
 
-                if self.model_name ==  "derppgssrev" or self.model_name == "der":
+                if self.model_name ==  "b2p" or self.model_name == "der":
                     if attr_str == 'logits':
                         self.logits = torch.zeros((self.buffer_size,
                                 *attr.shape[1:]), dtype=typ, device=self.device)
@@ -90,14 +83,8 @@ class Buffer:
                             self.task_labels = torch.zeros((self.buffer_size,
                                 *attr.shape[1:]), dtype=typ, device=self.device)
 
-    def add_data(self, examples, labels=None, logits=None, task_labels=None, task_order=None, record_data_list=None):
-        """
-        Adds the data to the memory buffer according to the reservoir strategy.
-        :param examples: tuples containing tensor of historical trajectories and map information
-        :param labels: the ground truth of predicted trajecotries
-        :param logits: the predicted heatmap in UQnet
-        :param task_labels: used in GEM method
-        """
+    def add_data(self, examples, labels=None, logits=None, task_labels=None, task_order=None):
+
 
 
         if not hasattr(self, 'examples'):
@@ -105,10 +92,11 @@ class Buffer:
         for i in range(examples[0].shape[0]): 
             index = reservoir(self.num_seen_examples, self.buffer_size)
             self.num_seen_examples += 1
+            
             if index >= 0:
                 # record the replayed data for further analysis
-                if record_data_list is not None and task_order is not None:
-                    record_data_list[index]=task_order
+                if task_order is not None:
+                   self.memory_recording(index, task_order)
 
 
                 for ii in range(len(self.examples)):
@@ -123,13 +111,13 @@ class Buffer:
 
                 if task_labels is not None:
                     self.task_labels[index] = task_labels[i].to(self.device)
+            else:
+                if task_order is not None:
+                   self.memory_recording(index, task_order)
+
 
     def get_data(self, size: int, transform: nn.Module = None, return_index=False) -> Tuple:
-        """
-        Random samples a batch of size items.
-        :param size: the number of requested items
-        :return:
-        """
+
 
         if size > min(self.num_seen_examples, self.examples[0].shape[0]): 
             size = min(self.num_seen_examples, self.examples[0].shape[0]) 
@@ -159,7 +147,7 @@ class Buffer:
 
 
 
-        if self.model_name == "derppgssrev":
+        if self.model_name == "b2p":
             ret_tuple = (example_ret_tuple_tmp, label_ret_tuple_tmp, self.logits[choice])
             return ret_tuple
         elif self.model_name == "der":
@@ -231,3 +219,16 @@ class Buffer:
             if hasattr(self, attr_str):
                 delattr(self, attr_str)
         self.num_seen_examples = 0
+
+    def memory_recording(self, index, task_label):
+        if index != -1:
+            tmp_list_memory_in_this_step = self.memory_data[-1].copy()
+            tmp_list_memory_in_this_step[index] = task_label
+            self.memory_data.append(tmp_list_memory_in_this_step)
+        else:
+            tmp_list_memory_in_this_step = self.memory_data[-1].copy()
+            self.memory_data.append(tmp_list_memory_in_this_step)
+        with open('./logging/replayed_memory/buffer_reservoir_'+self.model_name+'_bf_'+str(self.buffer_size)+'.txt', 'a') as f:
+            f.write(f"Step {len(self.memory_data)-1}: {tmp_list_memory_in_this_step}\n")
+        # print(f"Data for step {len(self.memory_data)} written to {file_path}")
+        # print(self.memory_data)

@@ -1,7 +1,6 @@
 import torch
 from torch.nn import functional as F
 from torch import nn
-from utils.derpp_buffer import Buffer
 from torch.optim import Adam
 import matplotlib.pyplot as plt
 
@@ -23,7 +22,7 @@ class Vanilla(nn.Module):
         self.transform = None
         self.opt = Adam(self.net.parameters(), lr=self.args.lr)
 
-    def observe(self, inputs, labels):
+    def observe(self, inputs, labels, task_id=None, record_list=None):
         self.opt.zero_grad()
         outputs = self.net(inputs)
         log_lanescore, heatmap, heatmap_reg = outputs

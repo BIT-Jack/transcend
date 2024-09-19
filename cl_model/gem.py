@@ -8,8 +8,7 @@ except BaseException:
     print('Warning: GEM and A-GEM cannot be used on Windows (quadprog required)')
 
 from cl_model.continual_model import ContinualModel
-# from utils.args import add_management_args, add_experiment_args, add_rehearsal_args, ArgumentParser
-# from utils.gem_buffer import Buffer
+
 from utils.derpp_buffer import Buffer
 
 
@@ -121,7 +120,7 @@ class Gem(nn.Module):
                                    dtype=torch.long).to(self.device) * (self.current_task - 1)
         )
 
-    def observe(self, inputs, labels):
+    def observe(self, inputs, labels, task_id=None, record_list=None):
 
         if not self.buffer.is_empty():
             buf_inputs, buf_labels, buf_task_labels = self.buffer.get_data(

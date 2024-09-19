@@ -13,10 +13,11 @@ import importlib
 
 #file path
 
-root_dir = '/home/jacklin/MY_Codes/TaskFree-CL-LifelongSU/'
+root_dir = '/home/jacklin/MY_Codes/TRANSCEND-src/'
 saved_dir = root_dir+'results/weights'
 result_dir = root_dir+'results/logs'
 data_dir = root_dir+'cl_dataset'
+
 
 
 
@@ -51,7 +52,6 @@ paralist = dict(xmax = 23,#23,
                 sample_range=1,
                 use_masker=False, 
                 lane2agent='lanegcn',
-                #integrate which written in jupyter, lyl
                 use_sem=False,
                 mode='lanescore',
                 prob_mode='ce',
@@ -95,7 +95,7 @@ def args_loading():
                         help='Learning rate.')
     parser.add_argument('--n_epochs', type=int, default= 1,
                         help='n_epochs.')
-    parser.add_argument('--batch_size', type=int, default= 8,
+    parser.add_argument('--batch_size', type=int, default= 4,
                         help='Batch size.')
     parser.add_argument('--alpha', type=float, default= 1.0,
                         help='Penalty weight.')
@@ -109,6 +109,12 @@ def args_loading():
     #parameter for decide whether record the amount of replayed data in each task or not
     parser.add_argument('--replayed_rc', type=bool, default=False,
                         help='turn True for replayed data logging')
+    parser.add_argument('--store_traj', type=bool, default=False,
+                        help='turn True for test trajectory recording')
+    parser.add_argument('--restart_training', type=bool, default=False,
+                        help='True for restart')
+    parser.add_argument('--restart_pre_task_num', type=int, default=1,
+                        help='scenario index of restarted training')
 
 
     args = parser.parse_args()  # parameters for a specific method

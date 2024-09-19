@@ -1,6 +1,5 @@
 import torch
 from torch import nn
-# from utils.gss_buffer import Buffer as Buffer
 from utils.der_gssp_buffer import Buffer as Buffer
 from torch.optim import Adam
 
@@ -39,7 +38,7 @@ class Gss(nn.Module):
             grads = grads.unsqueeze(0)
         return grads
 
-    def observe(self, inputs, labels, task_id=None, record_list=None):
+    def observe(self, inputs, labels, task_id=None):
 
         real_batch_size = inputs[0].shape[0]
         self.buffer.drop_cache()
@@ -65,10 +64,10 @@ class Gss(nn.Module):
             loss.backward()
             self.opt.step()
             
-        if task_id is not None and record_list is not None:
+        if task_id is not None:
             self.buffer.add_data(examples=inputs,
-                             labels=labels[:real_batch_size], task_order=task_id, record_data_list=record_list)
+                             labels=labels, task_order=task_id)
         else:
             self.buffer.add_data(examples=inputs,
-                             labels=labels[:real_batch_size])
+                             labels=labels)
         return loss.item()

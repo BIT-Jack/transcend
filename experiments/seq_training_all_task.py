@@ -18,13 +18,25 @@ def train(model: ContinualModel,
         replayed_data_recording = [1]*args.buffer_size
 
     print("The model for training:", args.model)
-    for t in range(0, args.train_task_num):
+    
+    if args.restart_training:
+        task_num_pre = args.restart_pre_task_num
+        print("Restart from Scenario ", task_num_pre)
+        model.net.encoder.load_state_dict(torch.load(saved_dir+'/'+args.model+'_'+'tasks_'+str(task_num_pre)+'_'+'bf_'+str(args.buffer_size)+'_encoder'+'.pt',
+                                              map_location='cuda:0'))
+        model.net.decoder.load_state_dict(torch.load(saved_dir+'/'+args.model+'_'+'tasks_'+str(task_num_pre)+'_'+'bf_'+str(args.buffer_size)+'_decoder'+'.pt',
+                                              map_location='cuda:0'))
+        print("The trained weights loaded.")
+    
+    if args.restart_training:
+        start_id = task_num_pre
+    else:
+        start_id = 0
+
+    for t in range(start_id, args.train_task_num):
         model.net.train(True)
         train_loader = dataset.get_data_loaders(t)
         task_sample_num = len(train_loader)*args.batch_size
-        # if hasattr(model, 'begin_task'):
-        #     model.begin_task(dataset)
-            
 
         for epoch in range(args.n_epochs):
             start_time = time.time()
@@ -41,10 +53,10 @@ def train(model: ContinualModel,
 
                 inputs = (traj, splines, masker, lanefeature, adj, A_f, A_r, c_mask)
                 labels = [ls, y]
-                
+
                 # to record replayed data for each task, for further analysis
-                if args.replayed_rc and t>0:
-                    loss = model.observe(inputs, labels, t+1, replayed_data_recording)
+                if args.replayed_rc:
+                    loss = model.observe(inputs, labels, t+1)
                 # normal trainning without the logging of replayed data
                 else:
                     loss = model.observe(inputs, labels)
@@ -55,12 +67,7 @@ def train(model: ContinualModel,
                                  f"   {(time.time()-start_time)/current:>.4f}s/sample")
                 sys.stdout.flush()
         
-        #write the logging text files for replayed data
-        if args.replayed_rc:
-            with open("./logging/replayed_memory/"+str(args.model)+"_bf_"+str(args.buffer_size)+"_replayed_data_task{:.0f}.txt".format(t+1), 'w') as log_replay:
-                log_replay.writelines("task"+str(t+1)+":")
-                log_replay.writelines(str(replayed_data_recording))
-            log_replay.close()
+
 
 
         if not hasattr(model, 'end_task'):

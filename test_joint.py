@@ -28,6 +28,9 @@ def main():
     parser.add_argument('--model', type=str, default='joint')
     parser.add_argument('--buffer_size', type=str, default='2000')
     parser.add_argument('--batch_size', type=int, default= 8)
+    parser.add_argument('--joint_task_num', type=int, default=7)
+    parser.add_argument('--store_traj', type=bool, default=False,
+                        help='turn True to store observed trajectories and predicted results')
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     parser.add_argument('--device', type=str, default= device)
     args = parser.parse_args()
@@ -41,18 +44,18 @@ def main():
     total_fde_lists = []
     total_mr_lists = []
 
-    task_id = 9
+    task_id = args.joint_task_num-1
     ret_fde_list, ret_mr_list = test_1_task(task_num = task_id+1, args = args)
     total_fde_lists.append(ret_fde_list)
     total_mr_lists.append(ret_mr_list)
 
-    if task_id>0:
-        fde_bwt = e_bwt(total_fde_lists, task_id+1)
-        mr_bwt = e_bwt(total_mr_lists, task_id+1)
-        with open(result_dir+'/'+str(task_id+1)+'_continual_tasks_'+args.method_name+'.txt', "a") as file:
-            file.write("\n FDE backward transfer:"+str(fde_bwt))# smaller is better, it can be negative
-            file.write("\n Missing Rate backward transfer: "+str(mr_bwt))
-            file.close()
+    # if task_id>0:
+    #     fde_bwt = e_bwt(total_fde_lists, task_id+1)
+    #     mr_bwt = e_bwt(total_mr_lists, task_id+1)
+    #     with open(result_dir+'/'+str(task_id+1)+'_continual_tasks_'+args.method_name+'.txt', "a") as file:
+    #         file.write("\n FDE backward transfer:"+str(fde_bwt))# smaller is better, it can be negative
+    #         file.write("\n Missing Rate backward transfer: "+str(mr_bwt))
+    #         file.close()
 
 
 if __name__ == '__main__':
