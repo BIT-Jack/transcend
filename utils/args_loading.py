@@ -95,7 +95,7 @@ def args_loading():
                         help='Learning rate.')
     parser.add_argument('--n_epochs', type=int, default= 1,
                         help='n_epochs.')
-    parser.add_argument('--batch_size', type=int, default= 4,
+    parser.add_argument('--batch_size', type=int, default= 8,
                         help='Batch size.')
     parser.add_argument('--alpha', type=float, default= 1.0,
                         help='Penalty weight.')
