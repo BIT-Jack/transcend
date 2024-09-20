@@ -24,8 +24,8 @@ class B2P(nn.Module):
         self.device = args.device
         self.transform = None
         self.opt = Adam(self.net.parameters(), lr=self.args.lr)
-        self.buffer = Buffer(self.args.buffer_size, self.device, minibatch_size=8, model_name=self.NAME,model=self) #distinctive memory buffer
-        self.buffer_r = Buffer_RSVR(self.args.buffer_size, self.device, self.NAME) #rapid memory buffer
+        self.buffer = Buffer(int(self.args.buffer_size/2), self.device, minibatch_size=8, model_name=self.NAME,model=self) #distinctive memory buffer
+        self.buffer_r = Buffer_RSVR(int(self.args.buffer_size/2), self.device, self.NAME) #rapid memory buffer
 
     #gss function get_grads
     def get_grads(self, inputs, labels):
