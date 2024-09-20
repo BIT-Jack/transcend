@@ -43,4 +43,17 @@ After training, the model weights will be saved in "_./results/weights/_".
 
 After testing, the tested evaluation metrics will be saved in "_./results/logs/_". 
 
+## Other tips
+1. If you want to record the memory samples at each step of memory buffer update, you can turn **--replayed_rc** as _True_ or _1_ (the default value is _False_).
+   The recording will be saved in "_./logging/replayed_memory/_" as .txt files, which records the task label of selected memory samples at each step.
+2. **--store_traj** is the another optional parameter to record predicted heatmap and endpoints for visualization. The default value is _False_.
+3. When training the model 'gem', the code may pause due to the failed QP solution. For a efficient restart, you can use **--restart_training** and **--restart_pre_task_num** to load trained weights and continue the lifelong learning.
+   Specifically, turn **--restart_training** into True, and set the **--restart_pre_task_num** as the id of the lateset finished task.
+
+
+
+
+
+
+
 
