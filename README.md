@@ -49,8 +49,11 @@ After testing, the tested evaluation metrics will be saved in "_./results/logs/_
 2. **--store_traj** is the another optional parameter to record predicted heatmap and endpoints for visualization. The default value is _False_.
 3. When training the model 'gem', the code may pause due to the failed QP solution. For a efficient restart, you can use **--restart_training** and **--restart_pre_task_num** to load trained weights and continue the lifelong learning.
    Specifically, turn **--restart_training** into True, and set the **--restart_pre_task_num** as the id of the lateset finished task.
-
+4. The experiments in our paper were conducted based on a Linux server with AMD EPYC-7763 CPU and NVIDIA GeForce RTX 4090 GPU. If "runtime errors" happened, decreasing the batch size may be helpful.
+   The default batch size is 8, which can be revised in "_./utils/args_loading.py_".
+   
 *Note that please DELETE additional parameters (bool type) **--replayed_rc**, **--store_traj**, and **--restart_training** in .sh files, if you DO NOT use them.
+
 
 
 
