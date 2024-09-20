@@ -11,7 +11,7 @@ wait $P1
 # setting --store_traj as True to record predicted trajectory for visualization 
 python test_CL.py --model b2p --buffer_size 500 --num_tasks 8 --store_traj True & P2=$!
 wait $P2
-echo "Ours Finished"
+echo "B2P (ours) Finished"
 
 python train_CL.py --model gem --buffer_size 500 --debug_mode 0  & P3=$!
 wait $P3
@@ -45,5 +45,17 @@ wait $P12
 echo "Vanilla Finished"
 
 
-echo "-----------All scripts are executed.The index is No.1"
+
+#joint training
+echo "Running joint training EXP"
+python train_joint.py --model vanilla --buffer_size 0 --dataset joint_dataset & P13=$!
+wait $P13
+python test_joint.py --model vanilla --buffer_size 0 --num_tasks 8 & P14=$!
+wait $P14
+
+echo "Joint Finished"
+
+
+
+echo "-----------All scripts are executed."
  
