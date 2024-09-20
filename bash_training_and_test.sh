@@ -5,9 +5,10 @@
 echo " Running Continual Training EXP"
 echo $(pwd)
 
-
+# setting --replayed_rc as 1 to record selected memory samples
 python train_CL.py  --model b2p --buffer_size 500 --debug_mode 0 --replayed_rc 1 & P1=$!
 wait $P1
+# setting --store_traj as True to record predicted trajectory for visualization 
 python test_CL.py --model b2p --buffer_size 500 --num_tasks 8 --store_traj True & P2=$!
 wait $P2
 echo "Ours Finished"
