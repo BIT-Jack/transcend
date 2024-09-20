@@ -50,6 +50,8 @@ After testing, the tested evaluation metrics will be saved in "_./results/logs/_
 3. When training the model 'gem', the code may pause due to the failed QP solution. For a efficient restart, you can use **--restart_training** and **--restart_pre_task_num** to load trained weights and continue the lifelong learning.
    Specifically, turn **--restart_training** into True, and set the **--restart_pre_task_num** as the id of the lateset finished task.
 
+*Note that please DELETE additional parameters (bool type) **--replayed_rc**, **--store_traj**, and **--restart_training** in .sh files, if you DO NOT use them.
+
 
 
 
