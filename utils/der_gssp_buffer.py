@@ -50,6 +50,8 @@ class Buffer:
         self.model_name = model_name
 
         self.memory_data = [[0]*self.buffer_size]
+        #key is the sample id in the buffer, value is the task id
+        self.task_id_dict = {i: 0 for i in range(buffer_size)}
     
     def reset_fathom(self):
         self.fathom = 0
@@ -180,6 +182,7 @@ class Buffer:
                 # record the replayed data for further analysis
                 if task_order is not None:
                    self.memory_recording(index, task_order)
+                   self.task_id_dict[index] = task_order
 
 
                 for ii in range(len(self.examples)):
@@ -221,6 +224,9 @@ class Buffer:
                 self.fathom = 0
         if transform is None: transform = lambda x: x
         
+        ret_task_id_list = [self.task_id_dict[int(key)] for key in choice]
+
+
         # To create the tuple to return
         ret_list = [0 for _ in range(len(self.examples))]
         for id_ex in range(len(self.examples)):
@@ -253,7 +259,7 @@ class Buffer:
         else:
             # print("give index, False")
             if self.model_name == "gss":
-                ret_tuple = (example_ret_tuple_tmp, label_ret_tuple_tmp)
+                ret_tuple = (example_ret_tuple_tmp, label_ret_tuple_tmp, ret_task_id_list)
             else:
                 ret_tuple = (example_ret_tuple_tmp, label_ret_tuple_tmp, self.logits[choice])
         return ret_tuple
