@@ -39,6 +39,8 @@ class Buffer:
         self.attributes = ['examples', 'labels', 'logits', 'task_labels']
 
         self.memory_data = [[0]*self.buffer_size]
+        #key is the sample id in the buffer, value is the task id
+        self.task_id_dict = {i: 0 for i in range(buffer_size)}
 
     def to(self, device):
         self.device = device
@@ -97,7 +99,7 @@ class Buffer:
                 # record the replayed data for further analysis
                 if task_order is not None:
                    self.memory_recording(index, task_order)
-
+                   self.task_id_dict[index] = task_order
 
                 for ii in range(len(self.examples)):
                     self.examples[ii][index] = examples[ii][i].detach().to(self.device)
@@ -115,6 +117,9 @@ class Buffer:
                 if task_order is not None:
                    self.memory_recording(index, task_order)
 
+                
+
+
 
     def get_data(self, size: int, transform: nn.Module = None, return_index=False) -> Tuple:
 
@@ -124,6 +129,8 @@ class Buffer:
 
         choice = np.random.choice(min(self.num_seen_examples, self.examples[0].shape[0]),
                                   size=size, replace=False)
+        ret_task_id_list = [self.task_id_dict[key] for key in choice if key in self.task_id_dict]
+
         if transform is None:
             def transform(x): return x
         ret_list = [0 for _ in range(len(self.examples))] 
@@ -151,7 +158,7 @@ class Buffer:
             ret_tuple = (example_ret_tuple_tmp, label_ret_tuple_tmp, self.logits[choice])
             return ret_tuple
         elif self.model_name == "der":
-            ret_tuple = (example_ret_tuple_tmp, self.logits[choice])
+            ret_tuple = (example_ret_tuple_tmp, self.logits[choice],ret_task_id_list)
             return ret_tuple
         elif self.model_name == "gem":
             if self.task_labels is not None:
