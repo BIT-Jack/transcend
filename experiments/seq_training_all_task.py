@@ -7,6 +7,8 @@ from traj_predictor.losses import *
 from traj_predictor.utils import *
 from utils.args_loading import *
 
+import pickle
+
 
 def train(model: ContinualModel,
           dataset,
@@ -55,8 +57,11 @@ def train(model: ContinualModel,
                 labels = [ls, y]
 
                 # to record replayed data for each task, for further analysis
-                if args.replayed_rc:
+                if args.replayed_rc and args.model=='b2p':
                     loss = model.observe(inputs, labels, t+1)
+                elif args.replayed_rc:
+                    loss, list_task_id = model.observe(inputs, labels, t+1)
+                    # print(list_task_id)
                 # normal trainning without the logging of replayed data
                 else:
                     loss = model.observe(inputs, labels)
@@ -79,15 +84,22 @@ def train(model: ContinualModel,
                     os.makedirs(save_dir)
                 torch.save(model.net.encoder.state_dict(), save_path_encoder)
                 torch.save(model.net.decoder.state_dict(), save_path_decoder)
+
+
+
         #A-GEM, GEM methods
         elif hasattr(model, 'end_task'):
             model.end_task(dataset)          
             if epoch==(args.n_epochs-1):
                 save_path_encoder = saved_dir+'/'+args.model+'_'+'tasks_'+str(t+1)+'_'+'bf_'+str(args.buffer_size)+'_encoder'+'.pt'
                 save_path_decoder = saved_dir+'/'+args.model+'_'+'tasks_'+str(t+1)+'_'+'bf_'+str(args.buffer_size)+'_decoder'+'.pt'
-                save_dir = os.path.dirname(save_path_encoder)
+                save_dir = os.path.dirname(save_path_encoder) 
                 if not os.path.exists(save_dir):
                     os.makedirs(save_dir)
                 torch.save(model.net.encoder.state_dict(), save_path_encoder)
                 torch.save(model.net.decoder.state_dict(), save_path_decoder)
-            
+
+    #recording the sampled memory
+    if args.replayed_rc and args.model !='b2p':
+        with open('./logging/replayed_memory/'+str(args.model)+'_bf_'+str(args.buffer_size)+'_sampled_memory.pkl', 'wb') as rf:
+            pickle.dump(list_task_id, rf)
