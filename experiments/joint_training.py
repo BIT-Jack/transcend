@@ -20,7 +20,7 @@ def train(model: ContinualModel,
     t = args.train_task_num-1 
     model.net.train(True)
     train_loader = dataset.get_data_loaders(t)
-    task_sample_num = len(train_loader)
+    task_sample_num = len(train_loader)*args.batch_size
 
     if hasattr(model, 'begin_task'):
         model.begin_task(dataset)
