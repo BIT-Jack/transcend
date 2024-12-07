@@ -16,7 +16,7 @@ abs_dir = data_dir+'/'
 
 def store_interaction_loaders(self, scenario_id):
 
-    scenario_info = {0:'MA', 1:'FT', 2:'LN', 3:'ZS2', 4:'OF', 5:'EP0', 6:'GL', 7:'ZS0', 8:'MT', 9:'SR'}
+    scenario_info = {0:'MA', 1:'FT', 2:'LN', 3:'ZS2', 4:'OF', 5:'EP0', 6:'GL', 7:'ZS0'}
     scenario_index = scenario_id ## choose scenario
     scenario_name = scenario_info[scenario_index]
     print(f"Scenario Index: {scenario_index+1}, Scenario Name: {scenario_name}")
